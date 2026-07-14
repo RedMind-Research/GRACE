@@ -5,7 +5,7 @@
 
 # Locked model-facing runtime for the released reproduction path.
 litellm[google]==1.84.0
-openai==2.21.0
+openai==2.45.0
 google-auth==2.48.0
 google-cloud-aiplatform==1.133.0
 google-genai==1.65.0
