@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use GRACE in research, please cite the paper below."
+title: "GRACE: Graph-Regularized Agentic Context Evolution"
+type: software
+version: 0.1.0
+license: Apache-2.0
+repository-code: "https://github.com/RedMind-Research/GRACE"
+url: "https://github.com/RedMind-Research/GRACE"
+keywords:
+  - agentic context evolution
+  - graph-regularized optimization
+  - language-model agents
+authors:
+  - family-names: Hsu
+    given-names: Dan C.
+  - family-names: Lu
+    given-names: Luke
+preferred-citation:
+  type: article
+  title: "Scoped Verification for Reliable Long-Horizon Agentic Context Evolution under Distribution Shift"
+  authors:
+    - family-names: Hsu
+      given-names: Dan C.
+    - family-names: Lu
+      given-names: Luke
+  journal: arXiv
+  year: 2026
+  doi: 10.48550/arXiv.2607.09175
+  url: "https://arxiv.org/abs/2607.09175"

@@ -1,0 +1,35 @@
+schema_version: grace.tau2-telecom-experiment.v1
+benchmark:
+  name: tau2
+  domain: telecom
+  revision: c5b2d228d850c59b749b93cf32c4745d3aa53967
+  task_split: ../data/splits.json
+execution:
+  seed: 1024
+  workers: 1
+  evolution_updates: 10
+  phase_schedule: [A, A, B, B, A, A, B, B, A, A]
+  experience_tasks_per_update: 42
+  evaluation_tasks: 66
+  evaluation_trials: 3
+models:
+  task_agent: vertex_ai/gemini-2.5-flash
+  diagnosis: vertex_ai/gemini-2.5-flash
+  evolution: vertex_ai/gemini-2.5-flash
+  p2g: vertex_ai/gemini-2.5-flash
+  user_simulator: gpt-4.1-2025-04-14
+method_calls:
+  temperature: 0.0
+  max_tokens: 65536
+episode_runtime:
+  max_tokens: 8192
+  timeout_seconds: 300
+  max_steps: 200
+  max_errors: 10
+grace:
+  p2g_max_rounds: 10
+  structural_analysis: true
+  sa_max_rounds: 3
+  sa_radius_step: 3
+  schema_repair_max_rounds: 3
+  artifact_mode: checkpoint

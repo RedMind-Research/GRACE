@@ -1,0 +1,4 @@
+# Lowest public runtime versions supported by pyproject.toml.
+jsonschema==4.23.0
+pydantic==2.10.0
+PyYAML==6.0

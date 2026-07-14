@@ -1,0 +1,180 @@
+name: Distribution
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GRACE_RUN_LIVE_TESTS: "0"
+  LITELLM_LOCAL_MODEL_COST_MAP: "True"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHON_DOTENV_DISABLED: "1"
+
+concurrency:
+  group: distribution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13"
+      - run: python -m pip install 'build>=1.2,<2' 'packaging>=24,<27' 'twine>=6,<7'
+      - id: release
+        env:
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          python scripts/release_plan.py \
+            --tag "$RELEASE_TAG" \
+            --github-output "$GITHUB_OUTPUT"
+      - name: Check source license policy
+        run: |
+          python -c 'from pathlib import Path; from scripts.verify_distributions import verify_source_legal_files; verify_source_legal_files(Path.cwd())'
+      - name: Verify public README image assets
+        if: github.ref_type == 'tag'
+        run: |
+          for asset in grace-wordmark.svg grace-pipeline.svg pass3-checkpoints.svg; do
+            curl \
+              --fail \
+              --location \
+              --retry 3 \
+              --retry-all-errors \
+              --show-error \
+              --silent \
+              "https://raw.githubusercontent.com/RedMind-Research/GRACE/main/assets/${asset}" \
+              --output "$RUNNER_TEMP/${asset}"
+            cmp "assets/${asset}" "$RUNNER_TEMP/${asset}"
+          done
+      - run: echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
+      - name: Build redmind-grace
+        run: python -m build --outdir dist/core .
+      - name: Normalize source distribution
+        run: |
+          python scripts/normalize_sdist.py \
+            --epoch "$SOURCE_DATE_EPOCH" \
+            "$(find dist/core -name '*.tar.gz' -print -quit)"
+      - name: Check archive metadata and boundaries
+        run: |
+          python -m twine check dist/core/*
+          python scripts/verify_distributions.py \
+            --core-wheel "$(find dist/core -name '*.whl' -print -quit)" \
+            --core-sdist "$(find dist/core -name '*.tar.gz' -print -quit)"
+      - name: Qualify installed wheel
+        run: |
+          python -m venv "$RUNNER_TEMP/core-wheel"
+          "$RUNNER_TEMP/core-wheel/bin/python" -m pip install \
+            "$(find dist/core -name '*.whl' -print -quit)"
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/core-wheel/bin/python" -I -m grace.qualify \
+            offline --report core-wheel-qualification.json
+          "$RUNNER_TEMP/core-wheel/bin/python" -I -c \
+            "from importlib.metadata import version; import grace; assert version('redmind-grace') == grace.__version__"
+          "$RUNNER_TEMP/core-wheel/bin/python" -I -c \
+            "import importlib.util; assert importlib.util.find_spec('reproduction') is None; assert importlib.util.find_spec('litellm') is None"
+      - name: Qualify installed source distribution
+        run: |
+          python -m venv "$RUNNER_TEMP/core-sdist"
+          "$RUNNER_TEMP/core-sdist/bin/python" -m pip install \
+            "$(find dist/core -name '*.tar.gz' -print -quit)"
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/core-sdist/bin/python" -I -m grace.qualify \
+            offline --report core-sdist-qualification.json
+          "$RUNNER_TEMP/core-sdist/bin/python" -I -c \
+            "from importlib.metadata import version; import grace; assert version('redmind-grace') == grace.__version__"
+      - name: Generate artifact checksums
+        run: |
+          cd dist/core
+          find . -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) -print \
+            | LC_ALL=C sort \
+            | xargs sha256sum > SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: redmind-grace-distribution
+          path: dist/core/
+          if-no-files-found: error
+
+  repo-reproduction-against-wheel:
+    needs: build-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - name: Assert clean checkout
+        run: test -z "$(git status --porcelain --untracked-files=all)"
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13"
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
+        with:
+          name: redmind-grace-distribution
+          path: ${{ runner.temp }}/release-artifacts
+      - name: Install built core wheel and locked reproduction runtime
+        run: |
+          python -m venv "$RUNNER_TEMP/reproduction-wheel"
+          CORE_WHEEL="$(find "$RUNNER_TEMP/release-artifacts" -name '*.whl' -print -quit)"
+          "$RUNNER_TEMP/reproduction-wheel/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/reproduction-wheel/bin/python" -m pip install \
+            "${CORE_WHEEL}[gemini]" \
+            -r requirements/reproduction.txt
+          "$RUNNER_TEMP/reproduction-wheel/bin/python" -m pip check
+      - name: Assert installed-core and repository-runner provenance
+        run: |
+          source "$RUNNER_TEMP/reproduction-wheel/bin/activate"
+          unset PYTHONPATH
+          python - <<'PY'
+          from importlib import metadata
+          import os
+          from pathlib import Path
+          import sys
+
+          import grace
+          import reproduction.tau2_telecom
+          from reproduction.tau2_telecom.harness.identity import PINNED_TAU2_REVISION
+          from reproduction.tau2_telecom.harness.tau2_interface import require_tau2_revision
+
+          repository = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          environment = Path(sys.prefix).resolve()
+          grace_file = Path(grace.__file__).resolve()
+          runner_file = Path(reproduction.tau2_telecom.__file__).resolve()
+
+          assert metadata.version("redmind-grace") == grace.__version__
+          assert grace_file.is_relative_to(environment)
+          assert not grace_file.is_relative_to(repository)
+          assert runner_file.is_relative_to(repository)
+          assert {
+              distribution: metadata.version(distribution)
+              for distribution in (
+                  "google-auth",
+                  "google-cloud-aiplatform",
+                  "google-genai",
+                  "litellm",
+                  "openai",
+              )
+          } == {
+              "google-auth": "2.48.0",
+              "google-cloud-aiplatform": "1.133.0",
+              "google-genai": "1.65.0",
+              "litellm": "1.84.0",
+              "openai": "2.21.0",
+          }
+          assert require_tau2_revision() == PINNED_TAU2_REVISION
+          PY
+      - name: Exercise the repository-only reproduction runner
+        run: |
+          source "$RUNNER_TEMP/reproduction-wheel/bin/activate"
+          unset PYTHONPATH
+          python -m reproduction.tau2_telecom validate-split
+          python -m reproduction.tau2_telecom plan --evaluation in-loop:all
+          test -z "$(git status --porcelain --untracked-files=all)"

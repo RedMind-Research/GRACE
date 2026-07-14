@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools==83.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "redmind-grace"
+dynamic = ["version"]
+description = "Graph-Regularized Agentic Context Evolution"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+authors = [{ name = "Dan C. Hsu" }, { name = "Luke Lu" }]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+keywords = ["agent", "graph", "llm", "prompt-optimization", "research"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
+]
+dependencies = [
+  "jsonschema>=4.23,<5",
+  "pydantic>=2.10,<3",
+  "PyYAML>=6,<7",
+]
+
+[project.urls]
+Homepage = "https://github.com/RedMind-Research/GRACE"
+Documentation = "https://github.com/RedMind-Research/GRACE/tree/main/docs"
+Repository = "https://github.com/RedMind-Research/GRACE"
+Issues = "https://github.com/RedMind-Research/GRACE/issues"
+Paper = "https://arxiv.org/abs/2607.09175"
+
+[project.optional-dependencies]
+gemini = [
+  "litellm[google]>=1.84.0,<2",
+]
+dev = [
+  "build>=1.2,<2",
+  "hypothesis>=6,<7",
+  "mypy>=1.14,<2",
+  "pytest>=8,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.9",
+  "setuptools==83.0.0",
+  "types-PyYAML>=6,<7",
+  "types-jsonschema>=4.23,<5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["grace*"]
+
+[tool.setuptools.package-data]
+grace = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "grace._version.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-ra"
+markers = [
+  "live: protected provider/network tests; requires GRACE_RUN_LIVE_TESTS=1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.mypy]
+mypy_path = "src:."
+python_version = "3.10"
+check_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = ["tau2", "tau2.*"]
+ignore_missing_imports = true

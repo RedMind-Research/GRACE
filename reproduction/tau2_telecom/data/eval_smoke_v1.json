@@ -1,0 +1,24 @@
+{
+  "schema_version": "grace.task-selection.v1",
+  "benchmark": "tau2",
+  "benchmark_revision": "c5b2d228d850c59b749b93cf32c4745d3aa53967",
+  "domain": "telecom",
+  "seed": 1024,
+  "tasks": [
+    {
+      "split": "eval",
+      "slot": 20,
+      "benchmark_task_id": "[mms_issue]break_apn_mms_setting[PERSONA:Hard]"
+    },
+    {
+      "split": "eval",
+      "slot": 43,
+      "benchmark_task_id": "[mobile_data_issue]airplane_mode_on|data_saver_mode_on[PERSONA:Easy]"
+    },
+    {
+      "split": "eval",
+      "slot": 60,
+      "benchmark_task_id": "[service_issue]airplane_mode_on|break_apn_settings|unseat_sim_card[PERSONA:None]"
+    }
+  ]
+}

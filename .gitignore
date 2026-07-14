@@ -1,0 +1,77 @@
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Secrets and local environment configuration
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+.secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+service_account*.json
+application_default_credentials.json
+credentials*.json
+client_secret*.json
+
+# Private planning and local agent instructions
+/internal/
+/memory/
+/notes/
+/plans/
+*.local.md
+
+# Python environments and bytecode
+.venv/
+.security-venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Test, type-checker, and tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.tox/
+.nox/
+.pyre/
+.pytype/
+.cache/
+
+# Coverage, profiling, and logs
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+*.log
+*.prof
+
+# Builds and local release qualification
+build/
+dist/
+dist-*/
+/.release/
+/qualification*.json
+junit.xml
+
+# Optional benchmark checkout
+/.tau2-bench/
+
+# Generated GRACE and reproduction artifacts
+grace_runs/
+tau2_telecom_runs/

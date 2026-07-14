@@ -1,0 +1,2 @@
+# Lowest supported dependency for the optional first-party Gemini adapter.
+litellm[google]==1.84.0

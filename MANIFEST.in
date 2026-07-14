@@ -1,0 +1,22 @@
+include README.md
+include LICENSE
+include NOTICE
+include CITATION.cff
+include CONTRIBUTING.md
+include SECURITY.md
+include pyproject.toml
+exclude THIRD_PARTY_NOTICES.md
+recursive-include docs *.md
+include assets/grace-pipeline.svg
+include assets/grace-wordmark.svg
+exclude assets/pass3-checkpoints.svg
+exclude assets/pass3-checkpoints.tex
+recursive-include examples *.py
+include requirements/gemini.txt
+include requirements/minimum.txt
+include tests/conftest.py
+recursive-include tests/integration *.py
+recursive-include tests/unit *.py
+prune grace_runs
+prune reproduction
+global-exclude __pycache__ *.py[cod] .DS_Store *.local.md

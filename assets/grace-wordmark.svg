@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Dan C. Hsu and Luke Lu -->
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="260" viewBox="0 0 960 260" role="img" aria-labelledby="title desc">
+  <title id="title">GRACE</title>
+  <desc id="desc">Rounded GRACE wordmark in the RedMind Research rose palette.</desc>
+  <defs>
+    <linearGradient id="redmind-rose" gradientUnits="userSpaceOnUse" x1="74" y1="63" x2="872" y2="197">
+      <stop offset="0" stop-color="#f2a5aa"/>
+      <stop offset="0.48" stop-color="#de8890"/>
+      <stop offset="0.76" stop-color="#ad4859"/>
+      <stop offset="1" stop-color="#e3a0a6"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#redmind-rose)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M192 88C178 72 160 63 138 63C98 63 74 92 74 130C74 169 99 197 140 197C161 197 179 189 192 174V137H151"/>
+    <path d="M264 197V63H310C342 63 361 79 361 103C361 128 341 143 310 143H264M312 143L365 197"/>
+    <path d="M421 197L473 63L525 197M444 145H502"/>
+    <path d="M687 89C674 72 656 63 633 63C593 63 568 92 568 130C568 169 593 197 633 197C656 197 674 188 687 171"/>
+    <path d="M764 63V197M764 63H872M764 130H853M764 197H872"/>
+  </g>
+</svg>
