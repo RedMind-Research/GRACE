@@ -4,7 +4,7 @@
 -e git+https://github.com/sierra-research/tau2-bench.git@c5b2d228d850c59b749b93cf32c4745d3aa53967#egg=tau2
 
 # Locked model-facing runtime for the released reproduction path.
-litellm[google]==1.84.0
+litellm[google]==1.92.0
 openai==2.21.0
 google-auth==2.48.0
 google-cloud-aiplatform==1.133.0
