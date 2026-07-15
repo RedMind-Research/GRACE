@@ -127,6 +127,24 @@ def test_p2g_cap_is_honest_warning_not_false_convergence() -> None:
     assert result.status == ResultStatus.COMPLETED_WITH_WARNINGS
 
 
+def test_p2g_closeout_surfaces_node_id_reference_rewrite() -> None:
+    graph = _graph()
+    graph["nodes"][0]["content"] = "Follow N002 carefully."
+    provider = ScriptedProvider([graph, {**_clean(), "missing_node": ["Still missing."]}])
+
+    result = initialize_graph(
+        "Follow carefully. Verify requests. Still missing.",
+        provider=provider,
+        schema=DefaultGraceSchema(),
+        max_rounds=1,
+    )
+
+    assert result.state.graph.nodes[0].content == "Follow carefully."
+    assert result.validation_report.forced_drops[0]["kind"] == "id_reference_rewrite"
+    assert result.validation_report.forced_drops[0]["cleaned_content"] == ("Follow carefully.")
+    assert "deterministic closeout changed or dropped 1 item(s)" in result.warnings
+
+
 def test_p2g_rejects_non_object_provider_response() -> None:
     provider = ScriptedProvider([[{"not": "a graph object"}]])
     with pytest.raises(ProviderError, match="JSON object"):

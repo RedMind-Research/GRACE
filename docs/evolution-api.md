@@ -50,7 +50,7 @@ Fatal provider, schema, state-integrity, and artifact conditions raise public GR
 - exhausted provider transport or response-validation attempts;
 - artifact integrity or persistence failure.
 
-Non-fatal fallbacks remain visible as `completed_with_warnings`; rejected graph operations, deterministic forced drops, structural-analysis caps, and PATCH fallbacks are never silently converted into an ordinary success.
+Non-fatal fallbacks remain visible as `completed_with_warnings`; rejected graph operations, deterministic graph rewrites or drops, structural-analysis caps, and PATCH fallbacks are never silently converted into an ordinary success.
 
 ## Persistence and resume
 

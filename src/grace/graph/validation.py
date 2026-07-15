@@ -27,7 +27,6 @@ normally pass a typed :class:`~grace.graph.models.GraphState`.
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import Any, cast
@@ -35,12 +34,12 @@ from typing import Any, cast
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, computed_field
 
 from grace.graph.models import GraphState
+from grace.graph.references import find_node_id_references
 from grace.schemas.models import NetworkSchema
 
 
 _NODE_FIELDS = ("id", "type", "content")
 _EDGE_FIELDS = ("source", "target", "relation")
-_NODE_ID_REFERENCE_RE = re.compile(r"\bN(?:_new)?_?\d+\b")
 
 
 class IssueSeverity(str, Enum):
@@ -232,6 +231,11 @@ def validate_graph(
 
     declared_object_types = object_type_ids(schema)
     declared_relations = relation_type_ids(schema)
+    graph_node_ids = frozenset(
+        str(raw_node.get("id"))
+        for raw_node in raw_nodes
+        if isinstance(raw_node, Mapping) and raw_node.get("id") is not None
+    )
     node_types: dict[str, str] = {}
     seen_node_ids: set[str] = set()
 
@@ -307,13 +311,14 @@ def validate_graph(
                     message="node content is empty",
                 )
             )
-        elif _NODE_ID_REFERENCE_RE.search(content):
+        elif references := find_node_id_references(content, graph_node_ids):
             errors.append(
                 GraphValidationIssue(
                     code="id_reference",
                     node_id=issue_node_id,
                     field="content",
-                    message="node content contains a graph node-ID token",
+                    message="node content contains a graph node-ID reference",
+                    context={"references": list(references)},
                 )
             )
 

@@ -53,7 +53,11 @@ from grace.schemas.loader import load_schema
 from grace.schemas.models import GroundingPolicy, NetworkSchema, ObjectType, RelationType
 
 
-def _unit_schema(*, acyclic: bool = False) -> NetworkSchema:
+def _unit_schema(
+    *,
+    acyclic: bool = False,
+    allow_self_loops: bool = False,
+) -> NetworkSchema:
     return NetworkSchema(
         id="unit-schema",
         description="Schema used to exercise deterministic graph boundaries.",
@@ -67,6 +71,7 @@ def _unit_schema(*, acyclic: bool = False) -> NetworkSchema:
                 description="Links units.",
                 allowed_pairs=(("unit", "unit"),),
                 acyclic=acyclic,
+                allow_self_loops=allow_self_loops,
             ),
         ),
     )
@@ -225,6 +230,35 @@ def test_merge_collapses_self_loops_and_duplicate_reroutes_atomically() -> None:
     assert result.graph.edges == (Edge(source="N001", target="N003", relation="links"),)
     assert result.applied_operations[0].effect["collapsed_self_loop_count"] == 1
     assert result.applied_operations[0].effect["collapsed_duplicate_count"] == 1
+
+
+def test_merge_preserves_schema_allowed_self_loops_and_deduplicates_reroutes() -> None:
+    graph = GraphState(
+        nodes=_unit_graph().nodes,
+        edges=(
+            Edge(source="N003", target="N003", relation="links"),
+            Edge(source="N002", target="N001", relation="links"),
+            Edge(source="N001", target="N002", relation="links"),
+        ),
+    )
+
+    result = assemble(
+        graph,
+        [Merge(u_id="N001", v_id="N002", new_content="Merged unit.")],
+        _unit_schema(allow_self_loops=True),
+    )
+
+    assert result.rejected_count == 0
+    assert result.graph.edges == (
+        Edge(source="N003", target="N003", relation="links"),
+        Edge(source="N001", target="N001", relation="links"),
+    )
+    assert result.applied_operations[0].effect == {
+        "representative_node_id": "N001",
+        "absorbed_node_id": "N002",
+        "collapsed_self_loop_count": 0,
+        "collapsed_duplicate_count": 1,
+    }
 
 
 def test_merge_rejects_invalid_existing_edge_reroute_without_partial_mutation() -> None:
@@ -503,6 +537,10 @@ def test_forced_drop_validates_payload_kind_specific_fields() -> None:
         ({"kind": RepairDropKind.DUPLICATE_EDGE, "edge": edge}, "kept_index"),
         (
             {"kind": RepairDropKind.EMPTY_AFTER_ID_STRIP, "node": node},
+            "cleaned_content",
+        ),
+        (
+            {"kind": RepairDropKind.ID_REFERENCE_REWRITE, "node": node},
             "cleaned_content",
         ),
     )

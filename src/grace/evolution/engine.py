@@ -512,7 +512,9 @@ def evolve_graph(
     if rejected:
         warnings.append(f"{len(rejected)} graph operation(s) rejected")
     if forced_drops:
-        warnings.append(f"{len(forced_drops)} graph item(s) force-dropped")
+        warnings.append(
+            f"deterministic repair changed or dropped {len(forced_drops)} graph item(s)"
+        )
     if sa_cap_reached:
         warnings.append("structural analysis reached its configured cap")
     warnings.extend(patch.warnings)

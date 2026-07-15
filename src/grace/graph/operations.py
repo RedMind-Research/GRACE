@@ -649,7 +649,7 @@ def assemble(
                 target = operation.u_id if edge.target == operation.v_id else edge.target
                 rerouted = source != edge.source or target != edge.target
                 key = (source, target, edge.relation)
-                if source == target:
+                if source == target and not schema.relation_allows_self_loop(edge.relation):
                     collapsed_self_loops += 1
                     continue
                 if key in tentative_keys:

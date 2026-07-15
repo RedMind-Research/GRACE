@@ -45,10 +45,57 @@ def test_validation_accepts_default_schema_graph() -> None:
     assert report.errors == ()
 
 
+def test_validation_distinguishes_domain_tokens_from_graph_id_references() -> None:
+    graph = GraphState(
+        nodes=[
+            Node(
+                id="N001",
+                type="identity",
+                content="Wear an N95 mask and document the unbound N999 code.",
+            ),
+            Node(id="N002", type="norm", content="Follow the safety protocol."),
+        ],
+        edges=[Edge(source="N001", target="N002", relation="supports")],
+    )
+
+    assert validate_graph(graph, DefaultGraceSchema()).valid
+
+    for content in (
+        "Follow N002 carefully.",
+        "Do not retain provider placeholder N_7.",
+        "Do not retain provider placeholder N_new_7.",
+    ):
+        referenced = graph.model_copy(
+            update={
+                "nodes": (
+                    graph.nodes[0].model_copy(update={"content": content}),
+                    graph.nodes[1],
+                )
+            }
+        )
+        assert any(
+            issue.code == "id_reference"
+            for issue in validate_graph(referenced, DefaultGraceSchema()).errors
+        )
+
+    custom_ids = GraphState(
+        nodes=[
+            Node(id="identity-root", type="identity", content="Primary role."),
+            Node(id="U1", type="norm", content="Follow identity-root guidance."),
+        ]
+    )
+    custom_report = validate_graph(custom_ids, DefaultGraceSchema())
+    assert [
+        issue.context["references"]
+        for issue in custom_report.errors
+        if issue.code == "id_reference"
+    ] == [["identity-root"]]
+
+
 def test_validation_accumulates_boundary_and_schema_errors() -> None:
     graph = {
         "nodes": [
-            {"id": "N001", "type": "norm", "content": "Mentions N002."},
+            {"id": "N001", "type": "norm", "content": "Mentions N001."},
             {"id": "N001", "type": "unknown", "content": ""},
         ],
         "edges": [

@@ -16,8 +16,9 @@
 
 This module is intentionally *not* part of the ordinary P2G validation loop.
 Callers may invoke :func:`repair_graph` explicitly after a repair cap is
-reached, when deterministic removal is preferable to returning an invalid
-graph.  Every discarded object is retained as typed audit telemetry.
+reached, when deterministic repair is preferable to returning an invalid
+graph.  Every discarded or replaced object is retained as typed audit
+telemetry.
 
 The implementation is schema-driven: relation membership, type signatures,
 self-loop policy, and acyclic relations all come from ``NetworkSchema``.  It
@@ -26,16 +27,15 @@ therefore contains no knowledge of the paper's default ontology.
 
 from __future__ import annotations
 
-import re
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from grace.graph.models import Edge, GraphState, Node
+from grace.graph.references import find_node_id_references, strip_node_id_references
 from grace.schemas.models import NetworkSchema
 
 
-_NODE_ID_REFERENCE_RE = re.compile(r"\bN(?:_new)?_?\d+\b")
 _MIN_CONTENT_LENGTH_AFTER_STRIP = 5
 
 
@@ -43,6 +43,7 @@ class RepairDropKind(str, Enum):
     """Stable machine-readable reasons for destructive repair."""
 
     DUPLICATE_NODE = "duplicate_node"
+    ID_REFERENCE_REWRITE = "id_reference_rewrite"
     EMPTY_AFTER_ID_STRIP = "empty_after_id_strip"
     DANGLING_EDGE = "dangling_edge"
     UNKNOWN_RELATION = "unknown_relation"
@@ -53,13 +54,13 @@ class RepairDropKind(str, Enum):
 
 
 class ForcedDrop(BaseModel):
-    """One immutable, lossless audit record for a discarded graph object.
+    """One immutable, lossless audit record for a changed or discarded object.
 
     ``original_index`` always addresses the corresponding tuple in the input
     graph, even when an edge is removed later during cycle breaking.
     ``kept_index`` identifies the retained first occurrence for duplicate
     objects.  ``cleaned_content`` records the post-strip value when a node is
-    too short to keep.
+    deterministically rewritten or becomes too short to keep.
     """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -78,6 +79,7 @@ class ForcedDrop(BaseModel):
             raise ValueError("a forced drop must contain exactly one node or edge")
         if self.kind in {
             RepairDropKind.DUPLICATE_NODE,
+            RepairDropKind.ID_REFERENCE_REWRITE,
             RepairDropKind.EMPTY_AFTER_ID_STRIP,
         }:
             if self.node is None:
@@ -93,8 +95,15 @@ class ForcedDrop(BaseModel):
             and self.kept_index is None
         ):
             raise ValueError("duplicate repair drops require kept_index")
-        if self.kind == RepairDropKind.EMPTY_AFTER_ID_STRIP and self.cleaned_content is None:
-            raise ValueError("content-strip drops require cleaned_content")
+        if (
+            self.kind
+            in {
+                RepairDropKind.ID_REFERENCE_REWRITE,
+                RepairDropKind.EMPTY_AFTER_ID_STRIP,
+            }
+            and self.cleaned_content is None
+        ):
+            raise ValueError("content repair records require cleaned_content")
         return self
 
 
@@ -105,13 +114,6 @@ class GraphRepairResult(BaseModel):
 
     graph: GraphState
     forced_drops: tuple[ForcedDrop, ...] = ()
-
-
-def _strip_node_id_references(content: str) -> str:
-    """Remove legacy/provider graph IDs and normalize resulting whitespace."""
-
-    without_ids = _NODE_ID_REFERENCE_RE.sub("", content)
-    return re.sub(r"\s+", " ", without_ids).strip()
 
 
 def _edge_key(edge: Edge) -> tuple[str, str, str]:
@@ -169,9 +171,10 @@ def _find_stable_back_edge(
 def repair_graph(graph: GraphState, schema: NetworkSchema) -> GraphRepairResult:
     """Apply deterministic, destructive fallback repair under ``schema``.
 
-    The input graph is never mutated.  Node-ID tokens in content are stripped;
-    a node is discarded when fewer than five characters remain.  Duplicate
-    IDs and structural duplicate edges retain their first input occurrence.
+    The input graph is never mutated.  References to current graph node IDs
+    and explicit provider-temporary IDs are stripped from content; a node is
+    discarded when fewer than five characters remain.  Duplicate IDs and
+    structural duplicate edges retain their first input occurrence.
     Invalid edges are removed, then each configured acyclic relation is made
     acyclic by repeatedly dropping its deterministic DFS back-edge.
 
@@ -190,6 +193,7 @@ def repair_graph(graph: GraphState, schema: NetworkSchema) -> GraphRepairResult:
 
     # Preserve legacy semantics: the first occurrence claims an ID even when
     # that node is subsequently too short after ID-token stripping.
+    graph_node_ids = {node.id for node in graph.nodes}
     seen_node_indices: dict[str, int] = {}
     kept_nodes: list[Node] = []
     for node_index, node in enumerate(graph.nodes):
@@ -207,8 +211,9 @@ def repair_graph(graph: GraphState, schema: NetworkSchema) -> GraphRepairResult:
             continue
         seen_node_indices[node.id] = node_index
 
-        if _NODE_ID_REFERENCE_RE.search(node.content):
-            cleaned_content = _strip_node_id_references(node.content)
+        references = find_node_id_references(node.content, graph_node_ids)
+        if references:
+            cleaned_content = strip_node_id_references(node.content, references)
             if len(cleaned_content) < _MIN_CONTENT_LENGTH_AFTER_STRIP:
                 forced_drops.append(
                     ForcedDrop(
@@ -222,6 +227,15 @@ def repair_graph(graph: GraphState, schema: NetworkSchema) -> GraphRepairResult:
                     )
                 )
                 continue
+            forced_drops.append(
+                ForcedDrop(
+                    kind=RepairDropKind.ID_REFERENCE_REWRITE,
+                    reason="node content contained graph node-ID references",
+                    original_index=node_index,
+                    node=node,
+                    cleaned_content=cleaned_content,
+                )
+            )
             node = node.model_copy(update={"content": cleaned_content})
         kept_nodes.append(node)
 

@@ -287,3 +287,41 @@ def test_public_engine_rejects_invalid_provided_graph_before_artifact_write(tmp_
 
     assert unused.requests == []
     assert not engine.artifacts.run_path.exists()
+
+
+def test_public_engine_accepts_domain_token_but_rejects_actual_node_reference(
+    tmp_path,
+) -> None:
+    graph = _initial_graph()
+    graph["nodes"][0]["content"] = "Use an N95 mask when required."
+    accepted_provider = ScriptedProvider([])
+    accepted = GraceEngine(
+        provider=accepted_provider,
+        artifact_dir=tmp_path / "accepted",
+        artifact_mode="checkpoint",
+        run_id="domain-token",
+    )
+
+    result = accepted.initialize_from_graph(
+        graph=graph,
+        instruction="Use an N95 mask when required.\nVerify first.",
+    )
+
+    assert result.state.graph.nodes[0].content == "Use an N95 mask when required."
+    assert accepted_provider.requests == []
+    assert result.artifact_location is not None
+
+    graph["nodes"][0]["content"] = "Follow N002 carefully."
+    rejected_provider = ScriptedProvider([])
+    rejected = GraceEngine(
+        provider=rejected_provider,
+        artifact_dir=tmp_path / "rejected",
+        artifact_mode="checkpoint",
+        run_id="actual-node-reference",
+    )
+
+    with pytest.raises(SchemaValidationError, match="provided graph is invalid"):
+        rejected.initialize_from_graph(graph=graph, instruction="Instruction.")
+
+    assert rejected_provider.requests == []
+    assert not rejected.artifacts.run_path.exists()

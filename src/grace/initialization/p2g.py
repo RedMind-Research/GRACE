@@ -206,7 +206,7 @@ def initialize_graph(
 
     The loop is schema detect-only plus provider-assisted fidelity repair.  A
     single destructive deterministic repair is reserved for non-converged
-    closeout, and every drop remains visible in the returned report.
+    closeout, and every rewrite or drop remains visible in the returned report.
     """
 
     if not instruction.strip():
@@ -380,7 +380,9 @@ def initialize_graph(
     if not fidelity_valid:
         warnings.append("P2G retains reported fidelity issues")
     if forced_drop_records:
-        warnings.append(f"deterministic closeout dropped {len(forced_drop_records)} item(s)")
+        warnings.append(
+            f"deterministic closeout changed or dropped {len(forced_drop_records)} item(s)"
+        )
     if rejected_records:
         warnings.append(f"deterministic assembly rejected {len(rejected_records)} operation(s)")
 
