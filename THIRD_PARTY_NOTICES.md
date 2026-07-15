@@ -1,8 +1,8 @@
 # Third-party notices
 
-## GRACE paper figure
+## GRACE paper figures
 
-`assets/pass3-checkpoints.tex` and `assets/pass3-checkpoints.svg` are repository renderings of the checkpoint figure in [Scoped Verification for Reliable Long-Horizon Agentic Context Evolution under Distribution Shift](https://arxiv.org/abs/2607.09175), Copyright 2026 Dan C. Hsu and Luke Lu. They are licensed under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/). The repository rendering changes the source format and presentation for use in this project.
+`assets/grace-network-schema.tex`, `assets/grace-network-schema.svg`, `assets/pass3-checkpoints.tex`, and `assets/pass3-checkpoints.svg` are repository renderings of figures in [Scoped Verification for Reliable Long-Horizon Agentic Context Evolution under Distribution Shift](https://arxiv.org/abs/2607.09175), Copyright 2026 Dan C. Hsu and Luke Lu. They are licensed under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/). Each repository rendering changes the source format and presentation for use in this project.
 
 ## tau2-bench
 

@@ -135,6 +135,10 @@ Scores are optional. A diagnosis can come from an LLM analyzer, deterministic te
 
 The default schema described in the paper uses `identity`, `norm`, and `knowledge` object types with `supports`, `refines`, and `sequence` relations. It is a practical starting point.
 
+![Default GRACE network schema: supports permits identity-to-norm, knowledge-to-norm, knowledge-to-knowledge, and norm-to-norm; refines permits same-type identity, norm, and knowledge pairs; sequence permits norm-to-norm](assets/grace-network-schema.svg)
+
+Type-level loops in the diagram denote admissible relations between objects of the same type; they do not permit graph-instance self-loops. The `refines` and `sequence` relations are acyclic.
+
 For a specialized domain, define a small ontology when semantic distinctions materially improve validation. Specify object types, relation types, allowed source/target signatures, natural-language definitions, and acyclicity constraints. The same `GraceEngine` runs without a domain-specific fork.
 
 ```bash
@@ -248,4 +252,4 @@ Development and release requirements are documented in [`CONTRIBUTING.md`](https
 
 ## License
 
-GRACE software, documentation, and original repository diagrams are licensed under the [Apache License 2.0](https://github.com/RedMind-Research/GRACE/blob/main/LICENSE), Copyright 2026 Dan C. Hsu and Luke Lu. The paper checkpoint renderings in `assets/pass3-checkpoints.*` are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Figure attribution, Tau² provenance, and its MIT notice are recorded in [`THIRD_PARTY_NOTICES.md`](https://github.com/RedMind-Research/GRACE/blob/main/THIRD_PARTY_NOTICES.md).
+GRACE software, documentation, and original repository diagrams are licensed under the [Apache License 2.0](https://github.com/RedMind-Research/GRACE/blob/main/LICENSE), Copyright 2026 Dan C. Hsu and Luke Lu. The paper figure renderings in `assets/grace-network-schema.*` and `assets/pass3-checkpoints.*` are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Figure attribution, Tau² provenance, and its MIT notice are recorded in [`THIRD_PARTY_NOTICES.md`](https://github.com/RedMind-Research/GRACE/blob/main/THIRD_PARTY_NOTICES.md).

@@ -44,7 +44,7 @@ jobs:
       - name: Verify public README image assets
         if: github.ref_type == 'tag'
         run: |
-          for asset in grace-wordmark.svg grace-pipeline.svg pass3-checkpoints.svg; do
+          for asset in grace-wordmark.svg grace-pipeline.svg grace-network-schema.svg pass3-checkpoints.svg; do
             curl \
               --fail \
               --location \

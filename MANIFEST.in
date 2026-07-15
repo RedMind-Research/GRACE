@@ -9,6 +9,8 @@ exclude THIRD_PARTY_NOTICES.md
 recursive-include docs *.md
 include assets/grace-pipeline.svg
 include assets/grace-wordmark.svg
+exclude assets/grace-network-schema.svg
+exclude assets/grace-network-schema.tex
 exclude assets/pass3-checkpoints.svg
 exclude assets/pass3-checkpoints.tex
 recursive-include examples *.py

@@ -140,7 +140,7 @@ def test_public_svg_assets_are_self_contained_and_accessible() -> None:
 
 
 def test_public_svg_assets_have_light_mode_canvas_backgrounds() -> None:
-    for name in ("grace-pipeline.svg", "pass3-checkpoints.svg"):
+    for name in ("grace-network-schema.svg", "grace-pipeline.svg", "pass3-checkpoints.svg"):
         root = ElementTree.parse(_REPOSITORY_ROOT / "assets" / name).getroot()
         background = next(
             element for element in root if element.attrib.get("id") == "canvas-background"
@@ -158,9 +158,10 @@ def test_public_svg_assets_have_light_mode_canvas_backgrounds() -> None:
         assert background_y + background_height >= view_y + view_height
         assert _is_opaque_white(background)
 
-    assert "\\pagecolor{white}" in (_REPOSITORY_ROOT / "assets/pass3-checkpoints.tex").read_text(
-        encoding="utf-8"
-    )
+    for name in ("grace-network-schema.tex", "pass3-checkpoints.tex"):
+        assert "\\pagecolor{white}" in (_REPOSITORY_ROOT / "assets" / name).read_text(
+            encoding="utf-8"
+        )
 
 
 def test_public_asset_license_metadata_is_self_contained() -> None:
@@ -177,7 +178,12 @@ def test_public_asset_license_metadata_is_self_contained() -> None:
 
     source_url = "https://arxiv.org/abs/2607.09175"
     copyright_text = "SPDX-FileCopyrightText: 2026 Dan C. Hsu and Luke Lu"
-    for name in ("pass3-checkpoints.svg", "pass3-checkpoints.tex"):
+    for name in (
+        "grace-network-schema.svg",
+        "grace-network-schema.tex",
+        "pass3-checkpoints.svg",
+        "pass3-checkpoints.tex",
+    ):
         contents = (_REPOSITORY_ROOT / "assets" / name).read_text(encoding="utf-8")
         assert "SPDX-License-Identifier: CC-BY-4.0" in contents
         assert "SPDX-License-Identifier: Apache-2.0" not in contents
