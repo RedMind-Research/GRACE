@@ -22,7 +22,6 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-
 If you find our research useful or inspiring, please consider citing our work:
 
 ```bibtex
