@@ -22,7 +22,6 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-## Citation
 
 If you find our research useful or inspiring, please consider citing our work:
 
@@ -39,6 +38,8 @@ If you find our research useful or inspiring, please consider citing our work:
 ```
 
 Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/RedMind-Research/GRACE/blob/main/CITATION.cff).
+
+## Intro
 
 GRACE evolves the persistent system-level instruction of an LLM agent through a typed semantic graph. It converts diagnosis reports into scoped graph updates, validates those updates against a network schema, and reconstructs an updated instruction with integrity-bound checkpoint lineage.
 
