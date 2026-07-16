@@ -22,6 +22,24 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
+## Citation
+
+If you find our research useful or inspiring, please consider citing our work:
+
+```bibtex
+@misc{hsu2026grace,
+      title={Scoped Verification for Reliable Long-Horizon Agentic Context Evolution under Distribution Shift},
+      author={Dan C. Hsu and Luke Lu},
+      year={2026},
+      eprint={2607.09175},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2607.09175},
+}
+```
+
+Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/RedMind-Research/GRACE/blob/main/CITATION.cff).
+
 GRACE evolves the persistent system-level instruction of an LLM agent through a typed semantic graph. It converts diagnosis reports into scoped graph updates, validates those updates against a network schema, and reconstructs an updated instruction with integrity-bound checkpoint lineage.
 
 ![GRACE product pipeline](assets/grace-pipeline.svg)
@@ -227,24 +245,6 @@ tests/                      deterministic product and reproduction tests
 | [Providers](https://github.com/RedMind-Research/GRACE/blob/main/docs/providers.md) | Gemini setup and the custom-provider contract |
 
 The formal Tau² Telecom procedure and metrics are documented beside the research code in [`reproduction/tau2_telecom/README.md`](https://github.com/RedMind-Research/GRACE/blob/main/reproduction/tau2_telecom/README.md).
-
-## Citation
-
-If you use GRACE in research, cite the paper:
-
-```bibtex
-@misc{hsu2026grace,
-      title={Scoped Verification for Reliable Long-Horizon Agentic Context Evolution under Distribution Shift},
-      author={Dan C. Hsu and Luke Lu},
-      year={2026},
-      eprint={2607.09175},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2607.09175},
-}
-```
-
-Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/RedMind-Research/GRACE/blob/main/CITATION.cff).
 
 ## Contributing and security
 
