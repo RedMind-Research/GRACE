@@ -62,6 +62,15 @@ def _initial_state() -> GraceState:
     )
 
 
+def test_write_bytes_preserves_lf_payload(tmp_path: Path) -> None:
+    target = tmp_path / "instruction.txt"
+    payload = b"first line\nsecond line\n"
+
+    ArtifactStore._write_bytes(target, payload)
+
+    assert target.read_bytes() == payload
+
+
 def _child_state(
     parent: GraceState,
     suffix: str = " Record the verification outcome.",
