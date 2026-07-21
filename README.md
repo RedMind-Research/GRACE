@@ -246,7 +246,7 @@ tests/                      deterministic product and reproduction tests
 
 ## Agent onboarding
 
-Coding agents should read [`AGENTS.md`](AGENTS.md) before making changes. It links to the repository's development, security, product, and reproduction guidance.
+Coding agents should read [`AGENTS.md`](https://github.com/RedMind-Research/GRACE/blob/main/AGENTS.md) before making changes. It links to the repository's development, security, product, and reproduction guidance.
 
 The formal Tau² Telecom procedure and metrics are documented beside the research code in [`reproduction/tau2_telecom/README.md`](https://github.com/RedMind-Research/GRACE/blob/main/reproduction/tau2_telecom/README.md).
 
