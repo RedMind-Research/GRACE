@@ -244,6 +244,10 @@ tests/                      deterministic product and reproduction tests
 | [Network schemas](https://github.com/RedMind-Research/GRACE/blob/main/docs/network-schema.md) | Default schema and custom ontology contract |
 | [Providers](https://github.com/RedMind-Research/GRACE/blob/main/docs/providers.md) | Gemini setup and the custom-provider contract |
 
+## Agent onboarding
+
+Coding agents should read [`AGENTS.md`](AGENTS.md) before making changes. It links to the repository's development, security, product, and reproduction guidance.
+
 The formal Tau² Telecom procedure and metrics are documented beside the research code in [`reproduction/tau2_telecom/README.md`](https://github.com/RedMind-Research/GRACE/blob/main/reproduction/tau2_telecom/README.md).
 
 ## Contributing and security
