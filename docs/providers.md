@@ -51,9 +51,7 @@ export GEMINI_API_KEY=YOUR_KEY
 ```python
 from grace.providers import GoogleAIStudioConfig, LiteLLMProvider
 
-provider = LiteLLMProvider(
-    GoogleAIStudioConfig(api_key_env="GEMINI_API_KEY")
-)
+provider = LiteLLMProvider(GoogleAIStudioConfig(api_key_env="GEMINI_API_KEY"))
 ```
 
 Applications may inject a secret resolver instead of reading an environment variable. Only the configured reference is resolved.
