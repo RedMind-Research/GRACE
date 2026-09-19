@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -25,12 +26,14 @@ from types import SimpleNamespace
 
 import pytest
 
+from reproduction.tau2_telecom.harness import tau2_interface
 from reproduction.tau2_telecom.harness.tau2_interface import (
     Tau2UnavailableError,
     _message_usage,
     _optional_tau2_imports,
     _reward_details,
     _safe_provider_attempt_category,
+    installed_tau2_revision,
 )
 
 
@@ -192,6 +195,40 @@ def test_tau2_import_rejects_litellm_preloaded_in_development_mode(
 
     with pytest.raises(Tau2UnavailableError, match="outside PRODUCTION"):
         _optional_tau2_imports()
+
+
+def test_editable_direct_url_file_uri_resolves_to_checkout_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A ``file:///C:/...`` editable-install URL must map back to a ``C:`` drive path.
+
+    ``Path("/C:/...")`` resolves relative to the drive's cwd on Windows, which
+    hid the ``.git`` directory and made the pinned revision unverifiable.
+    """
+
+    checkout = tmp_path / "src dir" / "tau2"
+    checkout.mkdir(parents=True)
+    # ``as_uri`` yields ``file:///C:/...`` on Windows and percent-encodes the
+    # space, exercising both the drive-letter and the unquote paths.
+    direct_url = json.dumps({"url": checkout.as_uri(), "dir_info": {"editable": True}})
+    assert direct_url.startswith('{"url": "file:///')
+
+    fake_distribution = SimpleNamespace(
+        read_text=lambda name: direct_url if name == "direct_url.json" else None
+    )
+    monkeypatch.setattr(tau2_interface.metadata, "distribution", lambda name: fake_distribution)
+
+    seen_roots: list[Path] = []
+
+    def fake_git_revision(root: Path) -> str | None:
+        seen_roots.append(root)
+        return "deadbeef" if root == checkout.resolve() else None
+
+    monkeypatch.setattr(tau2_interface, "_git_revision", fake_git_revision)
+
+    assert installed_tau2_revision() == "deadbeef"
+    assert seen_roots == [checkout.resolve()]
 
 
 def test_installed_tau2_and_litellm_start_offline_without_dotenv(

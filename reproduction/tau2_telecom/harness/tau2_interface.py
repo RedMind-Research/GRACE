@@ -37,6 +37,7 @@ from importlib import metadata
 from pathlib import Path
 from typing import Annotated, Any, Final, Literal, Protocol, runtime_checkable
 from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
@@ -1075,7 +1076,9 @@ def _direct_url_revision() -> str | None:
     parsed = urlparse(url)
     if parsed.scheme != "file" or parsed.netloc not in {"", "localhost"}:
         return None
-    return _git_revision(Path(unquote(parsed.path)).resolve())
+    # ``url2pathname`` turns ``/C:/...`` into ``C:\...`` on Windows; a bare
+    # ``Path("/C:/...")`` would resolve relative to the drive's cwd instead.
+    return _git_revision(Path(url2pathname(unquote(parsed.path))).resolve())
 
 
 def installed_tau2_revision() -> str | None:
