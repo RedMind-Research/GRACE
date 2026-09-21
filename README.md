@@ -183,7 +183,7 @@ GRACE is introduced in:
 >
 > Dan C. Hsu and Luke Lu. [arXiv:2607.09175](https://arxiv.org/abs/2607.09175), 2026.
 
-Across five independent telecom replications, the paper reports strict reliability (`pass^3`) increasing from `0.091` for the shared initial instruction to `0.673 ± 0.136` for GRACE at checkpoint 10. The paper provides the complete results and metric definitions.
+Across five independent telecom replications, the paper reports strict reliability (`pass^3`) increasing from `0.091` for the shared initial instruction to `0.661 ± 0.158` for GRACE at checkpoint 10. The paper provides the complete results and metric definitions.
 
 ![Paper-reported pass^3 checkpoints](assets/pass3-checkpoints.svg)
 
