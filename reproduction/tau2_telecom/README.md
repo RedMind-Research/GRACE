@@ -42,6 +42,8 @@ See [Providers](../../docs/providers.md) for Google AI Studio and route-specific
 
 Parentheses give Easy/Hard/None persona counts. Ten disjoint experience batches follow `AABBAABBAA`; evaluation tasks are held out from every update.
 
+The [task split builder](../tau2_telecom_split/README.md) rebuilds and verifies the published selection offline.
+
 ## One-command workflow
 
 Validate the frozen selection and inspect the exact episode count without provider credentials:
